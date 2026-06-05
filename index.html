@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Transit Display</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f0f5;
+    --surface: #ffffff;
+    --surface2: #e8e8f0;
+    --border: #d0d0de;
+    --text: #1a1a2e;
+    --muted: #7a7a99;
+    --red: #cc2233;
+    --red-dim: #fde8ea;
+    --green: #1a9e52;
+    --yellow: #b07800;
+    --blue: #2272cc;
+    --tab-active: #1a1a2e;
+    --tab-inactive: #9090aa;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  header {
+    padding: 16px 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .metro-m {
+    width: 28px; height: 28px;
+    background: var(--red);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 16px;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* TABS */
+  .tab-bar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 12px 16px 0;
+  }
+
+  .tab-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 4px;
+    color: var(--tab-inactive);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 400;
+    cursor: pointer;
+    text-align: center;
+    line-height: 1.3;
+    letter-spacing: 0.03em;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .tab-btn .tab-icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .tab-btn.active {
+    background: var(--surface2);
+    border-color: var(--red);
+    color: var(--tab-active);
+  }
+
+  .tab-btn .tab-label {
+    font-size: 9px;
+    letter-spacing: 0.05em;
+  }
+
+  /* PANELS */
+  .panels {
+    flex: 1;
+    padding: 12px 16px 16px;
+  }
+
+  .panel {
+    display: none;
+  }
+  .panel.active {
+    display: block;
+  }
+
+  /* REFRESH BAR */
+  .refresh-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  .refresh-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .refresh-countdown {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .countdown-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .countdown-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--blue);
+    min-width: 20px;
+    text-align: right;
+  }
+
+  .countdown-bar-wrap {
+    width: 48px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .countdown-bar {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 2px;
+    margin: 10px 0 6px;
+  }
+
+  /* TRAIN TABLE */
+  .train-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .train-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0 8px 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .train-table th:last-child,
+  .train-table td:last-child {
+    text-align: right;
+  }
+
+  .train-table td {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    padding: 9px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .train-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .cars-cell {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .min-cell {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .min-arr { color: var(--red); }
+  .min-soon { color: var(--yellow); }
+  .min-ok { color: var(--green); }
+  .min-brd { color: var(--red); font-size: 11px; letter-spacing: 0.05em; }
+
+  .dest-cell {
+    font-size: 12px;
+  }
+
+  /* BUS TABLE */
+  .bus-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .bus-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0 6px 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .bus-table td {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .bus-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .bus-route {
+    display: inline-block;
+    background: var(--red-dim);
+    color: var(--red);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .load-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .load-low { background: var(--green); }
+  .load-med { background: var(--yellow); }
+  .load-high { background: var(--red); }
+
+  .load-cell {
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* LOADING / ERROR */
+  .state-msg {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    padding: 24px 0;
+    letter-spacing: 0.04em;
+  }
+
+  .error-msg {
+    color: var(--red);
+  }
+
+  /* RED LINE BADGE */
+  .rl-badge {
+    display: inline-block;
+    width: 10px; height: 10px;
+    background: var(--red);
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 5px;
+    flex-shrink: 0;
+  }
+
+  /* CARD WRAP */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .card-header {
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .card-body {
+    padding: 4px 0;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 12px;
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="metro-m">M</div>
+  <h1>Transit · Real-Time</h1>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab(0)">
+    <span class="tab-icon">🚇</span>
+    <span class="tab-label">RKV<br>Metro</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab(1)">
+    <span class="tab-icon">🚌</span>
+    <span class="tab-label">Bus 38<br>RKV</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab(2)">
+    <span class="tab-icon">🚇</span>
+    <span class="tab-label">NBeth<br>Metro</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab(3)">
+    <span class="tab-icon">🚌</span>
+    <span class="tab-label">Bus 38<br>NBeth</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab(4)">
+    <span class="tab-icon">🚇</span>
+    <span class="tab-label">Shady<br>Grove</span>
+  </button>
+</div>
+
+<div class="panels">
+
+  <!-- TAB 0: Rockville Metro -->
+  <div class="panel active" id="panel-0">
+    <div class="refresh-bar">
+      <span class="refresh-time" id="refresh-time-metro-rkv">—</span>
+      <div class="refresh-countdown">
+        <span class="countdown-label">next</span>
+        <span class="countdown-num" id="cd-metro-rkv">10s</span>
+        <div class="countdown-bar-wrap"><div class="countdown-bar" id="bar-metro-rkv" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="rl-badge"></span>Rockville · Red Line</div>
+      <div class="card-body" id="trains-rkv"><div class="state-msg">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 1: Bus 38 Rockville -->
+  <div class="panel" id="panel-1">
+    <div class="refresh-bar">
+      <span class="refresh-time" id="refresh-time-bus-rkv">—</span>
+      <div class="refresh-countdown">
+        <span class="countdown-label">next</span>
+        <span class="countdown-num" id="cd-bus-rkv">21s</span>
+        <div class="countdown-bar-wrap"><div class="countdown-bar" id="bar-bus-rkv" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">🚌 Route 38 · Rockville Stop #14845</div>
+      <div class="card-body" id="bus-rkv"><div class="state-msg">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: North Bethesda Metro -->
+  <div class="panel" id="panel-2">
+    <div class="refresh-bar">
+      <span class="refresh-time" id="refresh-time-metro-nb">—</span>
+      <div class="refresh-countdown">
+        <span class="countdown-label">next</span>
+        <span class="countdown-num" id="cd-metro-nb">10s</span>
+        <div class="countdown-bar-wrap"><div class="countdown-bar" id="bar-metro-nb" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="rl-badge"></span>North Bethesda · Red Line</div>
+      <div class="card-body" id="trains-nb"><div class="state-msg">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Bus 38 North Bethesda -->
+  <div class="panel" id="panel-3">
+    <div class="refresh-bar">
+      <span class="refresh-time" id="refresh-time-bus-nb">—</span>
+      <div class="refresh-countdown">
+        <span class="countdown-label">next</span>
+        <span class="countdown-num" id="cd-bus-nb">21s</span>
+        <div class="countdown-bar-wrap"><div class="countdown-bar" id="bar-bus-nb" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">🚌 Route 38 · North Bethesda Stop #25804</div>
+      <div class="card-body" id="bus-nb"><div class="state-msg">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Shady Grove Metro -->
+  <div class="panel" id="panel-4">
+    <div class="refresh-bar">
+      <span class="refresh-time" id="refresh-time-metro-sg">—</span>
+      <div class="refresh-countdown">
+        <span class="countdown-label">next</span>
+        <span class="countdown-num" id="cd-metro-sg">10s</span>
+        <div class="countdown-bar-wrap"><div class="countdown-bar" id="bar-metro-sg" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="rl-badge"></span>Shady Grove · Red Line</div>
+      <div class="card-body" id="trains-sg"><div class="state-msg">Loading…</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const WMATA_KEY = '454576f5fff24a7796f1eae093342a6d';
+const RIDEON_KEY = 'C61CDA5EB8654E2F9429F7DC5938434FB8498F00A71D454885B48D3A';
+
+const METRO_INTERVAL = 10000;
+const BUS_INTERVAL = 21000;
+
+let metroRkvCountdown = METRO_INTERVAL / 1000;
+let metroNbCountdown  = METRO_INTERVAL / 1000;
+let metroSgCountdown  = METRO_INTERVAL / 1000;
+let busRkvCountdown   = BUS_INTERVAL / 1000;
+let busNbCountdown    = BUS_INTERVAL / 1000;
+
+// ── TAB SWITCHING ──────────────────────────────────────────
+function switchTab(idx) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+}
+
+// ── HELPERS ────────────────────────────────────────────────
+function fmtTime(d) {
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function setRefreshTime(id, d) {
+  document.getElementById(id).textContent = 'Updated ' + fmtTime(d);
+}
+
+function setCountdown(cdId, barId, secs, total) {
+  document.getElementById(cdId).textContent = secs + 's';
+  const pct = (secs / total) * 100;
+  document.getElementById(barId).style.width = pct + '%';
+}
+
+function minClass(min) {
+  if (min === 'BRD' || min === 'ARR') return 'min-arr';
+  const n = parseInt(min);
+  if (isNaN(n)) return '';
+  if (n <= 2) return 'min-soon';
+  return 'min-ok';
+}
+
+function loadClass(load) {
+  if (!load) return '';
+  const l = load.toUpperCase();
+  if (l.includes('LOW') || l.includes('EMPTY')) return 'load-low';
+  if (l.includes('FULL') || l.includes('HIGH')) return 'load-high';
+  return 'load-med';
+}
+
+// ── METRO FETCH (single combined call for all 3 stations) ──
+const METRO_STATIONS = {
+  'A14': { containerId: 'trains-rkv', refreshId: 'refresh-time-metro-rkv', singleDirection: false },
+  'A12': { containerId: 'trains-nb',  refreshId: 'refresh-time-metro-nb',  singleDirection: false },
+  'A15': { containerId: 'trains-sg',  refreshId: 'refresh-time-metro-sg',  singleDirection: true  },
+};
+
+const renderGroup = (label, arr) => {
+  if (!arr.length) return '';
+  let s = `<div class="section-label" style="padding-left:12px">${label}</div>`;
+  s += '<table class="train-table"><thead><tr>';
+  s += '<th style="padding-left:12px">#Cars</th><th>Destination</th><th style="padding-right:12px">Min</th>';
+  s += '</tr></thead><tbody>';
+  arr.forEach(t => {
+    const mc = minClass(t.Min);
+    const minDisp = (t.Min === 'BRD') ? 'BRD' : (t.Min === 'ARR') ? 'ARR' : t.Min;
+    s += `<tr>
+      <td class="cars-cell" style="padding-left:12px">${t.Car || '—'}</td>
+      <td class="dest-cell">${t.DestinationName || t.Destination || '—'}</td>
+      <td class="min-cell ${mc}" style="padding-right:12px">${minDisp}</td>
+    </tr>`;
+  });
+  s += '</tbody></table>';
+  return s;
+};
+
+async function fetchAllMetro() {
+  try {
+    const res = await fetch(
+      `https://api.wmata.com/StationPrediction.svc/json/GetPrediction/A14,A12,A15?api_key=${WMATA_KEY}`
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const now = new Date();
+
+    // Group trains by station
+    const byStation = { 'A14': [], 'A12': [], 'A15': [] };
+    (data.Trains || []).forEach(t => {
+      if (t.Line === 'RD' && byStation[t.LocationCode]) {
+        byStation[t.LocationCode].push(t);
+      }
+    });
+
+    // Render each station
+    Object.entries(METRO_STATIONS).forEach(([code, cfg]) => {
+      const trains = byStation[code];
+      setRefreshTime(cfg.refreshId, now);
+
+      if (!trains.length) {
+        document.getElementById(cfg.containerId).innerHTML = '<div class="state-msg">No Red Line trains found</div>';
+        return;
+      }
+
+      const toGlenmont = trains.filter(t =>
+        ['B08','B09','B10','B11'].includes(t.DestinationCode) ||
+        ['Silver Spring','Glenmont','Fort Totten','NoMa-Gallaudet'].some(d => t.DestinationName && t.DestinationName.includes(d))
+      );
+      const toShadyGrove = trains.filter(t =>
+        ['A15','A14','A13'].includes(t.DestinationCode) ||
+        ['Shady Grove','Rockville','Twinbrook','Grosvenor'].some(d => t.DestinationName && t.DestinationName.includes(d))
+      );
+      const ungrouped = trains.filter(t => !toGlenmont.includes(t) && !toShadyGrove.includes(t));
+
+      let html = '';
+      html += renderGroup('→ Glenmont', [...toGlenmont, ...ungrouped.filter((_, i) => i % 2 === 0)]);
+      if (!cfg.singleDirection) {
+        html += renderGroup('→ Shady Grove', [...toShadyGrove, ...ungrouped.filter((_, i) => i % 2 !== 0)]);
+      }
+      document.getElementById(cfg.containerId).innerHTML = html;
+    });
+
+  } catch (e) {
+    Object.values(METRO_STATIONS).forEach(cfg => {
+      document.getElementById(cfg.containerId).innerHTML = `<div class="state-msg error-msg">Error: ${e.message}</div>`;
+    });
+  }
+}
+
+// ── BUS FETCH ──────────────────────────────────────────────
+async function fetchBus(stopId, containerId, refreshId) {
+  try {
+    const res = await fetch(
+      `https://rideon.app/WebServices/RideOnWebService.asmx/GetNextBusesForStop?StopId=${stopId}&ApiKey=${RIDEON_KEY}&format=json`
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    setRefreshTime(refreshId, new Date());
+
+    // RideOn returns NextBuses array
+    const buses = data.NextBuses || data.nextBuses || data.d?.NextBuses || [];
+
+    if (!buses.length) {
+      document.getElementById(containerId).innerHTML = '<div class="state-msg">No departures found</div>';
+      return;
+    }
+
+    let html = '<table class="bus-table"><thead><tr>';
+    html += '<th style="padding-left:12px">Load</th><th>Route</th><th>Destination</th><th>Depart</th><th style="padding-right:12px">Time</th>';
+    html += '</tr></thead><tbody>';
+
+    buses.slice(0, 8).forEach(b => {
+      const load = b.Capacity || b.Load || b.PassengerLoad || '';
+      const lc = loadClass(load);
+      const route = b.RouteID || b.Route || b.RouteId || '38';
+      const dest = b.TripHeadsign || b.Destination || b.HeadSign || '—';
+      const depart = b.ScheduledDeparture || b.DepartureTime || b.ScheduledTime || '—';
+      const mins = b.MinutesToArrival || b.Minutes || b.PredictedMinutes || '—';
+
+      const minsDisp = (mins !== '—' && !isNaN(mins))
+        ? (parseInt(mins) <= 0 ? 'Now' : mins + ' min')
+        : mins;
+
+      html += `<tr>
+        <td class="load-cell" style="padding-left:12px"><span class="load-dot ${lc}"></span>${load || '—'}</td>
+        <td><span class="bus-route">${route}</span></td>
+        <td style="font-size:10px">${dest}</td>
+        <td style="font-size:10px;color:var(--muted)">${depart}</td>
+        <td style="padding-right:12px;font-size:11px;font-weight:500;color:var(--green)">${minsDisp}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    document.getElementById(containerId).innerHTML = html;
+  } catch (e) {
+    document.getElementById(containerId).innerHTML = `<div class="state-msg error-msg">Error: ${e.message}</div>`;
+  }
+}
+
+// ── REFRESH ALL ────────────────────────────────────────────
+function refreshMetro() {
+  fetchAllMetro();
+  metroRkvCountdown = METRO_INTERVAL / 1000;
+  metroNbCountdown  = METRO_INTERVAL / 1000;
+  metroSgCountdown  = METRO_INTERVAL / 1000;
+}
+
+function refreshBus() {
+  const hour = new Date().getHours();
+  // Stop #25804 (North Bethesda, outbound morning): 5am–12pm
+  if (hour >= 5 && hour < 12) {
+    fetchBus('25804', 'bus-nb', 'refresh-time-bus-nb');
+  } else {
+    document.getElementById('bus-nb').innerHTML = '<div class="state-msg">Active 5:00 am – 12:00 pm</div>';
+    document.getElementById('refresh-time-bus-nb').textContent = 'Outside active hours';
+  }
+  // Stop #14845 (Rockville, inbound afternoon): 1pm–5pm
+  if (hour >= 13 && hour < 17) {
+    fetchBus('14845', 'bus-rkv', 'refresh-time-bus-rkv');
+  } else {
+    document.getElementById('bus-rkv').innerHTML = '<div class="state-msg">Active 1:00 pm – 5:00 pm</div>';
+    document.getElementById('refresh-time-bus-rkv').textContent = 'Outside active hours';
+  }
+  busRkvCountdown = BUS_INTERVAL / 1000;
+  busNbCountdown  = BUS_INTERVAL / 1000;
+}
+
+// ── TICK ───────────────────────────────────────────────────
+function tick() {
+  metroRkvCountdown = Math.max(0, metroRkvCountdown - 1);
+  metroNbCountdown  = Math.max(0, metroNbCountdown  - 1);
+  metroSgCountdown  = Math.max(0, metroSgCountdown  - 1);
+  busRkvCountdown   = Math.max(0, busRkvCountdown   - 1);
+  busNbCountdown    = Math.max(0, busNbCountdown    - 1);
+
+  setCountdown('cd-metro-rkv', 'bar-metro-rkv', metroRkvCountdown, METRO_INTERVAL / 1000);
+  setCountdown('cd-metro-nb',  'bar-metro-nb',  metroNbCountdown,  METRO_INTERVAL / 1000);
+  setCountdown('cd-metro-sg',  'bar-metro-sg',  metroSgCountdown,  METRO_INTERVAL / 1000);
+  setCountdown('cd-bus-rkv',   'bar-bus-rkv',   busRkvCountdown,   BUS_INTERVAL / 1000);
+  setCountdown('cd-bus-nb',    'bar-bus-nb',     busNbCountdown,    BUS_INTERVAL / 1000);
+}
+
+// ── INIT ───────────────────────────────────────────────────
+refreshMetro();
+refreshBus();
+
+setInterval(refreshMetro, METRO_INTERVAL);
+setInterval(refreshBus,   BUS_INTERVAL);
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
