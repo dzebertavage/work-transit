@@ -23,9 +23,9 @@
     --mono: 'DM Mono', monospace;
     --sans: 'DM Sans', sans-serif;
   }
-
+ 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
+ 
   body {
     background: var(--bg);
     color: var(--text);
@@ -36,7 +36,7 @@
     max-width: 480px;
     margin: 0 auto;
   }
-
+ 
   /* HEADER */
   header {
     padding: 16px 16px 0;
@@ -44,7 +44,7 @@
     align-items: center;
     gap: 10px;
   }
-
+ 
   .metro-m {
     width: 28px; height: 28px;
     background: var(--red);
@@ -56,7 +56,7 @@
     color: white;
     flex-shrink: 0;
   }
-
+ 
   header h1 {
     font-family: var(--mono);
     font-size: 13px;
@@ -65,7 +65,7 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-
+ 
   /* TABS */
   .tab-bar {
     display: grid;
@@ -73,7 +73,7 @@
     gap: 4px;
     padding: 12px 16px 0;
   }
-
+ 
   .tab-btn {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -93,36 +93,36 @@
     align-items: center;
     gap: 4px;
   }
-
+ 
   .tab-btn .tab-icon {
     font-size: 14px;
     line-height: 1;
   }
-
+ 
   .tab-btn.active {
     background: var(--surface2);
     border-color: var(--red);
     color: var(--tab-active);
   }
-
+ 
   .tab-btn .tab-label {
     font-size: 9px;
     letter-spacing: 0.05em;
   }
-
+ 
   /* PANELS */
   .panels {
     flex: 1;
     padding: 12px 16px 16px;
   }
-
+ 
   .panel {
     display: none;
   }
   .panel.active {
     display: block;
   }
-
+ 
   /* REFRESH BAR */
   .refresh-bar {
     display: flex;
@@ -134,26 +134,26 @@
     border-radius: 8px;
     margin-bottom: 10px;
   }
-
+ 
   .refresh-time {
     font-family: var(--mono);
     font-size: 10px;
     color: var(--muted);
     letter-spacing: 0.04em;
   }
-
+ 
   .refresh-countdown {
     display: flex;
     align-items: center;
     gap: 6px;
   }
-
+ 
   .countdown-label {
     font-family: var(--mono);
     font-size: 10px;
     color: var(--muted);
   }
-
+ 
   .countdown-num {
     font-family: var(--mono);
     font-size: 11px;
@@ -162,7 +162,7 @@
     min-width: 20px;
     text-align: right;
   }
-
+ 
   .countdown-bar-wrap {
     width: 48px;
     height: 3px;
@@ -170,14 +170,14 @@
     border-radius: 2px;
     overflow: hidden;
   }
-
+ 
   .countdown-bar {
     height: 100%;
     background: var(--blue);
     border-radius: 2px;
     transition: width 1s linear;
   }
-
+ 
   /* SECTION LABEL */
   .section-label {
     font-family: var(--mono);
@@ -188,13 +188,13 @@
     padding: 0 2px;
     margin: 10px 0 6px;
   }
-
+ 
   /* TRAIN TABLE */
   .train-table {
     width: 100%;
     border-collapse: collapse;
   }
-
+ 
   .train-table th {
     font-family: var(--mono);
     font-size: 9px;
@@ -206,12 +206,12 @@
     text-align: left;
     border-bottom: 1px solid var(--border);
   }
-
+ 
   .train-table th:last-child,
   .train-table td:last-child {
     text-align: right;
   }
-
+ 
   .train-table td {
     font-family: var(--mono);
     font-size: 13px;
@@ -219,36 +219,36 @@
     padding: 9px 8px;
     border-bottom: 1px solid var(--border);
   }
-
+ 
   .train-table tr:last-child td {
     border-bottom: none;
   }
-
+ 
   .cars-cell {
     font-size: 12px;
     color: var(--muted);
   }
-
+ 
   .min-cell {
     font-size: 15px;
     font-weight: 500;
   }
-
+ 
   .min-arr { color: var(--red); }
   .min-soon { color: var(--yellow); }
   .min-ok { color: var(--green); }
   .min-brd { color: var(--red); font-size: 11px; letter-spacing: 0.05em; }
-
+ 
   .dest-cell {
     font-size: 12px;
   }
-
+ 
   /* BUS TABLE */
   .bus-table {
     width: 100%;
     border-collapse: collapse;
   }
-
+ 
   .bus-table th {
     font-family: var(--mono);
     font-size: 9px;
@@ -260,7 +260,7 @@
     text-align: left;
     border-bottom: 1px solid var(--border);
   }
-
+ 
   .bus-table td {
     font-family: var(--mono);
     font-size: 11px;
@@ -269,11 +269,11 @@
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
   }
-
+ 
   .bus-table tr:last-child td {
     border-bottom: none;
   }
-
+ 
   .bus-route {
     display: inline-block;
     background: var(--red-dim);
@@ -285,7 +285,7 @@
     font-weight: 500;
     letter-spacing: 0.04em;
   }
-
+ 
   .load-dot {
     display: inline-block;
     width: 8px; height: 8px;
@@ -296,13 +296,13 @@
   .load-low { background: var(--green); }
   .load-med { background: var(--yellow); }
   .load-high { background: var(--red); }
-
+ 
   .load-cell {
     font-size: 10px;
     color: var(--muted);
     white-space: nowrap;
   }
-
+ 
   /* LOADING / ERROR */
   .state-msg {
     font-family: var(--mono);
@@ -312,11 +312,11 @@
     padding: 24px 0;
     letter-spacing: 0.04em;
   }
-
+ 
   .error-msg {
     color: var(--red);
   }
-
+ 
   /* RED LINE BADGE */
   .rl-badge {
     display: inline-block;
@@ -327,7 +327,7 @@
     margin-right: 5px;
     flex-shrink: 0;
   }
-
+ 
   /* CARD WRAP */
   .card {
     background: var(--surface);
@@ -336,7 +336,7 @@
     overflow: hidden;
     margin-bottom: 8px;
   }
-
+ 
   .card-header {
     padding: 10px 12px;
     background: var(--surface2);
@@ -349,26 +349,26 @@
     font-weight: 500;
     letter-spacing: 0.04em;
   }
-
+ 
   .card-body {
     padding: 4px 0;
   }
-
+ 
   .divider {
     height: 1px;
     background: var(--border);
     margin: 6px 12px;
   }
-
+ 
 </style>
 </head>
 <body>
-
+ 
 <header>
   <div class="metro-m">M</div>
   <h1>Transit · Real-Time</h1>
 </header>
-
+ 
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab(0)">
     <span class="tab-icon">🚇</span>
@@ -391,9 +391,9 @@
     <span class="tab-label">Shady<br>Grove</span>
   </button>
 </div>
-
+ 
 <div class="panels">
-
+ 
   <!-- TAB 0: Rockville Metro -->
   <div class="panel active" id="panel-0">
     <div class="refresh-bar">
@@ -409,7 +409,7 @@
       <div class="card-body" id="trains-rkv"><div class="state-msg">Loading…</div></div>
     </div>
   </div>
-
+ 
   <!-- TAB 1: Bus 38 Rockville -->
   <div class="panel" id="panel-1">
     <div class="refresh-bar">
@@ -425,7 +425,7 @@
       <div class="card-body" id="bus-rkv"><div class="state-msg">Loading…</div></div>
     </div>
   </div>
-
+ 
   <!-- TAB 2: North Bethesda Metro -->
   <div class="panel" id="panel-2">
     <div class="refresh-bar">
@@ -441,7 +441,7 @@
       <div class="card-body" id="trains-nb"><div class="state-msg">Loading…</div></div>
     </div>
   </div>
-
+ 
   <!-- TAB 3: Bus 38 North Bethesda -->
   <div class="panel" id="panel-3">
     <div class="refresh-bar">
@@ -457,7 +457,7 @@
       <div class="card-body" id="bus-nb"><div class="state-msg">Loading…</div></div>
     </div>
   </div>
-
+ 
   <!-- TAB 4: Shady Grove Metro -->
   <div class="panel" id="panel-4">
     <div class="refresh-bar">
@@ -473,43 +473,43 @@
       <div class="card-body" id="trains-sg"><div class="state-msg">Loading…</div></div>
     </div>
   </div>
-
+ 
 </div>
-
+ 
 <script>
 const WMATA_KEY = '454576f5fff24a7796f1eae093342a6d';
 const RIDEON_KEY = 'C61CDA5EB8654E2F9429F7DC5938434FB8498F00A71D454885B48D3A';
-
+ 
 const METRO_INTERVAL = 12000;
 const BUS_INTERVAL = 60000;
-
+ 
 let metroRkvCountdown = METRO_INTERVAL / 1000;
 let metroNbCountdown  = METRO_INTERVAL / 1000;
 let metroSgCountdown  = METRO_INTERVAL / 1000;
 let busRkvCountdown   = BUS_INTERVAL / 1000;
 let busNbCountdown    = BUS_INTERVAL / 1000;
-
+ 
 // ── TAB SWITCHING ──────────────────────────────────────────
 function switchTab(idx) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
   document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
 }
-
+ 
 // ── HELPERS ────────────────────────────────────────────────
 function fmtTime(d) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
-
+ 
 function setRefreshTime(id, d) {
   document.getElementById(id).textContent = 'Updated ' + fmtTime(d);
 }
-
+ 
 function setCountdown(cdId, barId, secs, total) {
   document.getElementById(cdId).textContent = secs + 's';
   const pct = (secs / total) * 100;
   document.getElementById(barId).style.width = pct + '%';
 }
-
+ 
 function minClass(min) {
   if (min === 'BRD' || min === 'ARR') return 'min-arr';
   const n = parseInt(min);
@@ -517,7 +517,7 @@ function minClass(min) {
   if (n <= 2) return 'min-soon';
   return 'min-ok';
 }
-
+ 
 function loadClass(load) {
   if (!load) return '';
   const l = load.toUpperCase();
@@ -525,14 +525,14 @@ function loadClass(load) {
   if (l.includes('FULL') || l.includes('HIGH')) return 'load-high';
   return 'load-med';
 }
-
+ 
 // ── METRO FETCH (single combined call for all 3 stations) ──
 const METRO_STATIONS = {
   'A14': { containerId: 'trains-rkv', refreshId: 'refresh-time-metro-rkv', singleDirection: false },
   'A12': { containerId: 'trains-nb',  refreshId: 'refresh-time-metro-nb',  singleDirection: false },
   'A15': { containerId: 'trains-sg',  refreshId: 'refresh-time-metro-sg',  singleDirection: true  },
 };
-
+ 
 const renderGroup = (label, arr) => {
   if (!arr.length) return '';
   let s = `<div class="section-label" style="padding-left:12px">${label}</div>`;
@@ -551,7 +551,7 @@ const renderGroup = (label, arr) => {
   s += '</tbody></table>';
   return s;
 };
-
+ 
 async function fetchAllMetro() {
   try {
     const res = await fetch(
@@ -559,9 +559,8 @@ async function fetchAllMetro() {
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    console.log(JSON.stringify(data.Trains));
     const now = new Date();
-
+ 
     // Group trains by station
     const byStation = { 'A14': [], 'A12': [], 'A15': [] };
     (data.Trains || []).forEach(t => {
@@ -569,27 +568,21 @@ async function fetchAllMetro() {
         byStation[t.LocationCode].push(t);
       }
     });
-
+ 
     // Render each station
     Object.entries(METRO_STATIONS).forEach(([code, cfg]) => {
       const trains = byStation[code];
       setRefreshTime(cfg.refreshId, now);
-
+ 
       if (!trains.length) {
         document.getElementById(cfg.containerId).innerHTML = '<div class="state-msg">No Red Line trains found</div>';
         return;
       }
-
-      // Red Line toward Glenmont: destination is east of current station
-    const GLENMONT_DESTS = ['A01','A02','A03','A04','A05','A06','A07','A08','A09','A10',
-                            'B01','B02','B03','B04','B05','B06','B07','B08','B09','B10','B11'];
-    // Red Line toward Shady Grove: destination is west of current station
-    const SHADYGROVE_DESTS = ['A11','A12','A13','A14','A15'];
-
-    const toGlenmont   = trains.filter(t => GLENMONT_DESTS.includes(t.DestinationCode));
-    const toShadyGrove = trains.filter(t => SHADYGROVE_DESTS.includes(t.DestinationCode));
+ 
+      const toGlenmont   = trains.filter(t => t.Group === '1');
+    const toShadyGrove = trains.filter(t => t.Group === '2');
     const ungrouped    = trains.filter(t => !toGlenmont.includes(t) && !toShadyGrove.includes(t));
-
+ 
       let html = '';
       html += renderGroup('→ Glenmont', [...toGlenmont, ...ungrouped.filter((_, i) => i % 2 === 0)]);
       if (!cfg.singleDirection) {
@@ -597,14 +590,14 @@ async function fetchAllMetro() {
       }
       document.getElementById(cfg.containerId).innerHTML = html;
     });
-
+ 
   } catch (e) {
     Object.values(METRO_STATIONS).forEach(cfg => {
       document.getElementById(cfg.containerId).innerHTML = `<div class="state-msg error-msg">Error: ${e.message}</div>`;
     });
   }
 }
-
+ 
 // ── BUS FETCH ──────────────────────────────────────────────
 async function fetchBus(stopId, containerId, refreshId) {
   try {
@@ -613,21 +606,21 @@ async function fetchBus(stopId, containerId, refreshId) {
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-
+ 
     setRefreshTime(refreshId, new Date());
-
+ 
     // RideOn returns NextBuses array
     const buses = data.NextBuses || data.nextBuses || data.d?.NextBuses || [];
-
+ 
     if (!buses.length) {
       document.getElementById(containerId).innerHTML = '<div class="state-msg">No departures found</div>';
       return;
     }
-
+ 
     let html = '<table class="bus-table"><thead><tr>';
     html += '<th style="padding-left:12px">Load</th><th>Route</th><th>Destination</th><th>Depart</th><th style="padding-right:12px">Time</th>';
     html += '</tr></thead><tbody>';
-
+ 
     buses.slice(0, 8).forEach(b => {
       const load = b.Capacity || b.Load || b.PassengerLoad || '';
       const lc = loadClass(load);
@@ -635,11 +628,11 @@ async function fetchBus(stopId, containerId, refreshId) {
       const dest = b.TripHeadsign || b.Destination || b.HeadSign || '—';
       const depart = b.ScheduledDeparture || b.DepartureTime || b.ScheduledTime || '—';
       const mins = b.MinutesToArrival || b.Minutes || b.PredictedMinutes || '—';
-
+ 
       const minsDisp = (mins !== '—' && !isNaN(mins))
         ? (parseInt(mins) <= 0 ? 'Now' : mins + ' min')
         : mins;
-
+ 
       html += `<tr>
         <td class="load-cell" style="padding-left:12px"><span class="load-dot ${lc}"></span>${load || '—'}</td>
         <td><span class="bus-route">${route}</span></td>
@@ -648,14 +641,14 @@ async function fetchBus(stopId, containerId, refreshId) {
         <td style="padding-right:12px;font-size:11px;font-weight:500;color:var(--green)">${minsDisp}</td>
       </tr>`;
     });
-
+ 
     html += '</tbody></table>';
     document.getElementById(containerId).innerHTML = html;
   } catch (e) {
     document.getElementById(containerId).innerHTML = `<div class="state-msg error-msg">Error: ${e.message}</div>`;
   }
 }
-
+ 
 // ── REFRESH ALL ────────────────────────────────────────────
 function refreshMetro() {
   fetchAllMetro();
@@ -663,7 +656,7 @@ function refreshMetro() {
   metroNbCountdown  = METRO_INTERVAL / 1000;
   metroSgCountdown  = METRO_INTERVAL / 1000;
 }
-
+ 
 function refreshBus() {
   const hour = new Date().getHours();
   // Stop #25804 (North Bethesda, outbound morning): 5am–12pm
@@ -683,7 +676,7 @@ function refreshBus() {
   busRkvCountdown = BUS_INTERVAL / 1000;
   busNbCountdown  = BUS_INTERVAL / 1000;
 }
-
+ 
 // ── TICK ───────────────────────────────────────────────────
 function tick() {
   metroRkvCountdown = Math.max(0, metroRkvCountdown - 1);
@@ -691,18 +684,18 @@ function tick() {
   metroSgCountdown  = Math.max(0, metroSgCountdown  - 1);
   busRkvCountdown   = Math.max(0, busRkvCountdown   - 1);
   busNbCountdown    = Math.max(0, busNbCountdown    - 1);
-
+ 
   setCountdown('cd-metro-rkv', 'bar-metro-rkv', metroRkvCountdown, METRO_INTERVAL / 1000);
   setCountdown('cd-metro-nb',  'bar-metro-nb',  metroNbCountdown,  METRO_INTERVAL / 1000);
   setCountdown('cd-metro-sg',  'bar-metro-sg',  metroSgCountdown,  METRO_INTERVAL / 1000);
   setCountdown('cd-bus-rkv',   'bar-bus-rkv',   busRkvCountdown,   BUS_INTERVAL / 1000);
   setCountdown('cd-bus-nb',    'bar-bus-nb',     busNbCountdown,    BUS_INTERVAL / 1000);
 }
-
+ 
 // ── INIT ───────────────────────────────────────────────────
 refreshMetro();
 refreshBus();
-
+ 
 setInterval(refreshMetro, METRO_INTERVAL);
 setInterval(refreshBus,   BUS_INTERVAL);
 setInterval(tick, 1000);
