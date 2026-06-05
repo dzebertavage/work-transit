@@ -480,8 +480,8 @@
 const WMATA_KEY = '454576f5fff24a7796f1eae093342a6d';
 const RIDEON_KEY = 'C61CDA5EB8654E2F9429F7DC5938434FB8498F00A71D454885B48D3A';
  
-const METRO_INTERVAL = 12000;
-const BUS_INTERVAL = 60000;
+const METRO_INTERVAL = 12000; // in milliseconds (1s = 1000ms)
+const BUS_INTERVAL = 60000; // in milliseconds (1s = 1000ms)
  
 let metroRkvCountdown = METRO_INTERVAL / 1000;
 let metroNbCountdown  = METRO_INTERVAL / 1000;
