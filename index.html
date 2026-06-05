@@ -559,6 +559,7 @@ async function fetchAllMetro() {
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
+    console.log(JSON.stringify(data.Trains));
     const now = new Date();
 
     // Group trains by station
