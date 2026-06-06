@@ -715,10 +715,22 @@ async function fetchAllMetro() {
 // ── BUS FETCH ──────────────────────────────────────────────
 async function fetchBus(stopId, containerId, refreshId) {
   try {
-    const apiUrl = `https://rideon.app/WebServices/RideOnWebService.asmx/GetNextBusesForStop?StopId=${stopId}&ApiKey=${RIDEON_KEY}&format=json`;
-    const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`);
+    const apiUrl = `https://rideon.app/WebServices/RideOnWebService.asmx/GetNextBusesForStop?StopId=${stopId}&ApiKey=${RIDEON_KEY}`;
+    const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`, {
+      headers: { 'Accept': 'application/json' }
+    });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    const text = await res.text();
+    console.log('RideOn raw response:', text.substring(0, 500));
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch(e) {
+      document.getElementById(containerId).innerHTML =
+        `<div class="state-msg error-msg">Raw: ${text.substring(0, 200)}</div>`;
+      return;
+    }
 
     setRefreshTime(refreshId, new Date());
 
