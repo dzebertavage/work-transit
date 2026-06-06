@@ -782,6 +782,9 @@ async function fetchAllBus() {
       const headsign = trip.trip_headsign || trip.TripHeadsign || 'Route 38';
       const stopTimes = tu.stop_time_update || tu.StopTimeUpdate || [];
 
+      // Debug: log all stop IDs for route 38
+      console.log('Route 38 stop IDs:', stopTimes.map(s => s.stop_id || s.StopId).join(', '));
+
       stopTimes.forEach(stu => {
         const sid = (stu.stop_id || stu.StopId || '').toString();
         if (!arrivals[sid]) return;
