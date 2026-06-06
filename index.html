@@ -584,7 +584,7 @@
 const WMATA_KEY = '454576f5fff24a7796f1eae093342a6d';
 const RIDEON_KEY = 'C61CDA5EB8654E2F9429F7DC5938434FB8498F00A71D454885B48D3A';
 
-const METRO_INTERVAL = 15000;
+const METRO_INTERVAL = 12000;
 const BUS_INTERVAL = 60000;
 const ALERTS_INTERVAL = 60000;
 
@@ -616,7 +616,12 @@ function setCountdown(cdId, barId, secs, total) {
   document.getElementById(barId).style.width = pct + '%';
 }
 
-function minClass(min) {
+function normalizeDest(name) {
+  if (!name) return '—';
+  return name
+    .replace(/Shady Grv$/i, 'Shady Grove')
+    .replace(/^GLENMONT$/i, 'Glenmont');
+}
   if (min === 'BRD' || min === 'ARR') return 'min-arr';
   const n = parseInt(min);
   if (isNaN(n)) return '';
@@ -650,7 +655,7 @@ const renderGroup = (label, arr) => {
     const minDisp = (t.Min === 'BRD') ? 'BRD' : (t.Min === 'ARR') ? 'ARR' : t.Min;
     s += `<tr>
       <td class="cars-cell" style="padding-left:12px">${t.Car || '—'}</td>
-      <td class="dest-cell">${t.DestinationName || t.Destination || '—'}</td>
+      <td class="dest-cell">${normalizeDest(t.DestinationName)}</td>
       <td class="min-cell ${mc}" style="padding-right:12px">${minDisp}</td>
     </tr>`;
   });
