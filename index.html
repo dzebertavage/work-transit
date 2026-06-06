@@ -715,9 +715,8 @@ async function fetchAllMetro() {
 // ── BUS FETCH ──────────────────────────────────────────────
 async function fetchBus(stopId, containerId, refreshId) {
   try {
-    const res = await fetch(
-      `https://rideon.app/WebServices/RideOnWebService.asmx/GetNextBusesForStop?StopId=${stopId}&ApiKey=${RIDEON_KEY}&format=json`
-    );
+    const apiUrl = `https://rideon.app/WebServices/RideOnWebService.asmx/GetNextBusesForStop?StopId=${stopId}&ApiKey=${RIDEON_KEY}&format=json`;
+    const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
@@ -806,18 +805,18 @@ function refreshMetro() {
 
 function refreshBus() {
   const hour = new Date().getHours();
-  // Stop #25804 (North Bethesda, outbound morning): 5am–12pm
-  if (hour >= 5 && hour < 12) {
+  // Stop #25804 (North Bethesda): 12:01pm–midnight
+  if (hour >= 12) {
     fetchBus('25804', 'bus-nb', 'refresh-time-bus-nb');
   } else {
-    document.getElementById('bus-nb').innerHTML = '<div class="state-msg">Active 5:00 am – 12:00 pm</div>';
+    document.getElementById('bus-nb').innerHTML = '<div class="state-msg">Active 12:01 pm – 12:00 am</div>';
     document.getElementById('refresh-time-bus-nb').textContent = 'Outside active hours';
   }
-  // Stop #14845 (Rockville, inbound afternoon): 1pm–5pm
-  if (hour >= 13 && hour < 17) {
+  // Stop #14845 (Rockville): midnight–12pm
+  if (hour < 12) {
     fetchBus('14845', 'bus-rkv', 'refresh-time-bus-rkv');
   } else {
-    document.getElementById('bus-rkv').innerHTML = '<div class="state-msg">Active 1:00 pm – 5:00 pm</div>';
+    document.getElementById('bus-rkv').innerHTML = '<div class="state-msg">Active 12:00 am – 12:00 pm</div>';
     document.getElementById('refresh-time-bus-rkv').textContent = 'Outside active hours';
   }
   busRkvCountdown = BUS_INTERVAL / 1000;
