@@ -712,65 +712,108 @@ async function fetchAllMetro() {
   }
 }
 
-// ── BUS FETCH ──────────────────────────────────────────────
-async function fetchBus(stopId, containerId, refreshId) {
+// ── BUS FETCH (GTFS-RT, single call for both stops) ────────
+const RIDEON_CLIENT_ID = '97';
+const BUS_STOPS = {
+  '14845': { containerId: 'bus-rkv', refreshId: 'refresh-time-bus-rkv', activeHours: [0, 12]  },
+  '25804': { containerId: 'bus-nb',  refreshId: 'refresh-time-bus-nb',  activeHours: [12, 24] },
+};
+
+function renderBusTable(arrivals, containerId) {
+  if (!arrivals.length) {
+    document.getElementById(containerId).innerHTML = '<div class="state-msg">No departures found</div>';
+    return;
+  }
+  let html = '<table class="bus-table"><thead><tr>';
+  html += '<th style="padding-left:12px">Route</th><th>Destination</th><th style="padding-right:12px">Min</th>';
+  html += '</tr></thead><tbody>';
+  arrivals.slice(0, 8).forEach(a => {
+    const minsDisp = a.mins <= 0 ? 'Now' : a.mins + ' min';
+    const minColor = a.mins <= 0 ? 'var(--red)' : a.mins <= 2 ? 'var(--yellow)' : 'var(--green)';
+    html += `<tr>
+      <td style="padding-left:12px"><span class="bus-route">${a.route}</span></td>
+      <td style="font-size:10px">${a.dest}</td>
+      <td style="padding-right:12px;font-size:13px;font-weight:500;color:${minColor}">${minsDisp}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById(containerId).innerHTML = html;
+}
+
+async function fetchAllBus() {
+  const hour = new Date().getHours();
+  const now = new Date();
+  const nowEpoch = Math.floor(now.getTime() / 1000);
+
+  // Mark inactive stops before fetching
+  let anyActive = false;
+  Object.entries(BUS_STOPS).forEach(([stopId, cfg]) => {
+    const [start, end] = cfg.activeHours;
+    if (hour >= start && hour < end) {
+      anyActive = true;
+    } else {
+      const startLabel = start === 0 ? '12:00 am' : `${start}:00 ${start < 12 ? 'am' : 'pm'}`;
+      const endLabel   = end === 12 ? '12:00 pm' : end === 24 ? '12:00 am' : `${end}:00 pm`;
+      document.getElementById(cfg.containerId).innerHTML =
+        `<div class="state-msg">Active ${startLabel} – ${endLabel}</div>`;
+      document.getElementById(cfg.refreshId).textContent = 'Outside active hours';
+    }
+  });
+
+  if (!anyActive) return;
+
   try {
-    const apiUrl = `https://rideon.app/WebServices/RideOnWebService.asmx/GetNextBusesForStop?StopId=${stopId}&ApiKey=${RIDEON_KEY}`;
-    const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`, {
-      headers: { 'Accept': 'application/json' }
-    });
+    const apiUrl = `https://rideon.app/json/GetGtfsRealtimeTripUpdates?apiKey=${RIDEON_KEY}&ClientId=${RIDEON_CLIENT_ID}`;
+    const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    console.log('RideOn raw response:', text.substring(0, 500));
+    const data = await res.json();
 
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch(e) {
-      document.getElementById(containerId).innerHTML =
-        `<div class="state-msg error-msg">Raw: ${text.substring(0, 200)}</div>`;
-      return;
-    }
+    // Build arrival lists per stop
+    const arrivals = { '14845': [], '25804': [] };
 
-    setRefreshTime(refreshId, new Date());
+    const entities = data.entity || data.Entity || [];
+    entities.forEach(entity => {
+      const tu = entity.trip_update || entity.TripUpdate;
+      if (!tu) return;
+      const trip = tu.trip || tu.Trip || {};
+      const routeId = (trip.route_id || trip.RouteId || '').toString();
+      if (routeId !== '38') return;
 
-    // RideOn returns NextBuses array
-    const buses = data.NextBuses || data.nextBuses || data.d?.NextBuses || [];
+      const headsign = trip.trip_headsign || trip.TripHeadsign || 'Route 38';
+      const stopTimes = tu.stop_time_update || tu.StopTimeUpdate || [];
 
-    if (!buses.length) {
-      document.getElementById(containerId).innerHTML = '<div class="state-msg">No departures found</div>';
-      return;
-    }
+      stopTimes.forEach(stu => {
+        const sid = (stu.stop_id || stu.StopId || '').toString();
+        if (!arrivals[sid]) return;
 
-    let html = '<table class="bus-table"><thead><tr>';
-    html += '<th style="padding-left:12px">Load</th><th>Route</th><th>Destination</th><th>Depart</th><th style="padding-right:12px">Time</th>';
-    html += '</tr></thead><tbody>';
+        const arr = stu.arrival || stu.Arrival || stu.departure || stu.Departure || {};
+        const t = arr.time || arr.Time;
+        if (!t) return;
 
-    buses.slice(0, 8).forEach(b => {
-      const load = b.Capacity || b.Load || b.PassengerLoad || '';
-      const lc = loadClass(load);
-      const route = b.RouteID || b.Route || b.RouteId || '38';
-      const dest = b.TripHeadsign || b.Destination || b.HeadSign || '—';
-      const depart = b.ScheduledDeparture || b.DepartureTime || b.ScheduledTime || '—';
-      const mins = b.MinutesToArrival || b.Minutes || b.PredictedMinutes || '—';
+        const mins = Math.round((parseInt(t) - nowEpoch) / 60);
+        if (mins < -1 || mins > 90) return;
 
-      const minsDisp = (mins !== '—' && !isNaN(mins))
-        ? (parseInt(mins) <= 0 ? 'Now' : mins + ' min')
-        : mins;
-
-      html += `<tr>
-        <td class="load-cell" style="padding-left:12px"><span class="load-dot ${lc}"></span>${load || '—'}</td>
-        <td><span class="bus-route">${route}</span></td>
-        <td style="font-size:10px">${dest}</td>
-        <td style="font-size:10px;color:var(--muted)">${depart}</td>
-        <td style="padding-right:12px;font-size:11px;font-weight:500;color:var(--green)">${minsDisp}</td>
-      </tr>`;
+        arrivals[sid].push({ route: '38', dest: headsign, mins });
+      });
     });
 
-    html += '</tbody></table>';
-    document.getElementById(containerId).innerHTML = html;
+    // Sort and render each active stop
+    Object.entries(BUS_STOPS).forEach(([stopId, cfg]) => {
+      const [start, end] = cfg.activeHours;
+      if (hour < start || hour >= end) return;
+      arrivals[stopId].sort((a, b) => a.mins - b.mins);
+      setRefreshTime(cfg.refreshId, now);
+      renderBusTable(arrivals[stopId], cfg.containerId);
+    });
+
   } catch (e) {
-    document.getElementById(containerId).innerHTML = `<div class="state-msg error-msg">Error: ${e.message}</div>`;
+    Object.entries(BUS_STOPS).forEach(([stopId, cfg]) => {
+      const [start, end] = cfg.activeHours;
+      if (hour >= start && hour < end) {
+        document.getElementById(cfg.containerId).innerHTML =
+          `<div class="state-msg error-msg">Error: ${e.message}</div>`;
+      }
+    });
   }
 }
 
@@ -816,21 +859,7 @@ function refreshMetro() {
 }
 
 function refreshBus() {
-  const hour = new Date().getHours();
-  // Stop #25804 (North Bethesda): 12:01pm–midnight
-  if (hour >= 12) {
-    fetchBus('25804', 'bus-nb', 'refresh-time-bus-nb');
-  } else {
-    document.getElementById('bus-nb').innerHTML = '<div class="state-msg">Active 12:01 pm – 12:00 am</div>';
-    document.getElementById('refresh-time-bus-nb').textContent = 'Outside active hours';
-  }
-  // Stop #14845 (Rockville): midnight–12pm
-  if (hour < 12) {
-    fetchBus('14845', 'bus-rkv', 'refresh-time-bus-rkv');
-  } else {
-    document.getElementById('bus-rkv').innerHTML = '<div class="state-msg">Active 12:00 am – 12:00 pm</div>';
-    document.getElementById('refresh-time-bus-rkv').textContent = 'Outside active hours';
-  }
+  fetchAllBus();
   busRkvCountdown = BUS_INTERVAL / 1000;
   busNbCountdown  = BUS_INTERVAL / 1000;
 }
