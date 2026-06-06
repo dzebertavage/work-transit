@@ -623,6 +623,8 @@ function normalizeDest(name) {
     .replace(/Shady Grv$/i, 'Shady Grove')
     .replace(/^GLENMONT$/i, 'Glenmont');
 }
+
+function minClass(min) {
   if (min === 'BRD' || min === 'ARR') return 'min-arr';
   const n = parseInt(min);
   if (isNaN(n)) return '';
