@@ -772,6 +772,18 @@ async function fetchAllBus() {
     const arrivals = { '14845': [], '25804': [] };
 
     const entities = data.entity || data.Entity || [];
+    const routeIds = [...new Set(entities.map(e => {
+      const tu = e.trip_update || e.TripUpdate;
+      if (!tu) return null;
+      const trip = tu.trip || tu.Trip || {};
+      return trip.route_id || trip.RouteId || null;
+    }).filter(Boolean))].join(', ');
+
+    Object.values(BUS_STOPS).forEach(cfg => {
+      document.getElementById(cfg.containerId).innerHTML =
+        `<div class="state-msg" style="font-size:9px;text-align:left;padding:8px 12px">Routes in feed:<br>${routeIds}<br>Entities: ${entities.length}</div>`;
+    });
+
     entities.forEach(entity => {
       const tu = entity.trip_update || entity.TripUpdate;
       if (!tu) return;
