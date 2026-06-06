@@ -772,18 +772,6 @@ async function fetchAllBus() {
     const arrivals = { '14845': [], '25804': [] };
 
     const entities = data.entity || data.Entity || [];
-    const routeIds = [...new Set(entities.map(e => {
-      const tu = e.trip_update || e.TripUpdate;
-      if (!tu) return null;
-      const trip = tu.trip || tu.Trip || {};
-      return trip.route_id || trip.RouteId || null;
-    }).filter(Boolean))].join(', ');
-
-    Object.values(BUS_STOPS).forEach(cfg => {
-      document.getElementById(cfg.containerId).innerHTML =
-        `<div class="state-msg" style="font-size:9px;text-align:left;padding:8px 12px">Routes in feed:<br>${routeIds}<br>Entities: ${entities.length}</div>`;
-    });
-
     entities.forEach(entity => {
       const tu = entity.trip_update || entity.TripUpdate;
       if (!tu) return;
@@ -793,13 +781,6 @@ async function fetchAllBus() {
 
       const headsign = trip.trip_headsign || trip.TripHeadsign || 'Route 38';
       const stopTimes = tu.stop_time_update || tu.StopTimeUpdate || [];
-
-      // Debug: show all stop IDs for route 38 on screen
-      const stopIds = stopTimes.map(s => s.stop_id || s.StopId).join(', ');
-      Object.values(BUS_STOPS).forEach(cfg => {
-        document.getElementById(cfg.containerId).innerHTML =
-          `<div class="state-msg" style="font-size:9px;text-align:left;padding:8px 12px">Route 38 stops:<br>${stopIds}</div>`;
-      });
 
       stopTimes.forEach(stu => {
         const sid = (stu.stop_id || stu.StopId || '').toString();
