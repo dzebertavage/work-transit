@@ -712,108 +712,85 @@ async function fetchAllMetro() {
   }
 }
 
-// ── BUS FETCH (GTFS-RT, single call for both stops) ────────
+// ── BUS FETCH (rideon.app busstop endpoint) ────────────────
 const RIDEON_CLIENT_ID = '97';
 const BUS_STOPS = {
   '14845': { containerId: 'bus-rkv', refreshId: 'refresh-time-bus-rkv', activeHours: [0, 12]  },
   '25804': { containerId: 'bus-nb',  refreshId: 'refresh-time-bus-nb',  activeHours: [12, 24] },
 };
 
-function renderBusTable(arrivals, containerId) {
-  if (!arrivals.length) {
+function renderBusTable(rows, containerId) {
+  if (!rows.length) {
     document.getElementById(containerId).innerHTML = '<div class="state-msg">No departures found</div>';
     return;
   }
   let html = '<table class="bus-table"><thead><tr>';
-  html += '<th style="padding-left:12px">Route</th><th>Destination</th><th style="padding-right:12px">Min</th>';
+  html += '<th style="padding-left:12px">Route</th><th>Destination</th><th>Depart</th><th style="padding-right:12px">Min</th>';
   html += '</tr></thead><tbody>';
-  arrivals.slice(0, 8).forEach(a => {
-    const minsDisp = a.mins <= 0 ? 'Now' : a.mins + ' min';
-    const minColor = a.mins <= 0 ? 'var(--red)' : a.mins <= 2 ? 'var(--yellow)' : 'var(--green)';
+  rows.forEach(r => {
+    const minColor = r.mins === 'Now' ? 'var(--red)' :
+                     parseInt(r.mins) <= 2 ? 'var(--yellow)' : 'var(--green)';
     html += `<tr>
-      <td style="padding-left:12px"><span class="bus-route">${a.route}</span></td>
-      <td style="font-size:10px">${a.dest}</td>
-      <td style="padding-right:12px;font-size:13px;font-weight:500;color:${minColor}">${minsDisp}</td>
+      <td style="padding-left:12px"><span class="bus-route">${r.route}</span></td>
+      <td style="font-size:10px">${r.dest}</td>
+      <td style="font-size:10px;color:var(--muted)">${r.depart}</td>
+      <td style="padding-right:12px;font-size:13px;font-weight:500;color:${minColor}">${r.mins}</td>
     </tr>`;
   });
   html += '</tbody></table>';
   document.getElementById(containerId).innerHTML = html;
 }
 
+async function fetchBusStop(stopId, cfg) {
+  const apiUrl = `https://rideon.app/busstop?take=15&ShowRefreshNote=true&MarginTop=25&stopId=${stopId}`;
+  const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const html = await res.text();
+
+  // Parse the HTML table response
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const rows = [];
+
+  doc.querySelectorAll('table tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    if (cells.length < 5) return;
+    // Columns: Load | Route | Destination | Departure | Time
+    const route  = cells[1]?.textContent?.trim();
+    const dest   = cells[2]?.textContent?.trim();
+    const depart = cells[3]?.textContent?.trim();
+    const mins   = cells[4]?.textContent?.trim();
+    if (route && dest) rows.push({ route, dest, depart, mins });
+  });
+
+  setRefreshTime(cfg.refreshId, new Date());
+  renderBusTable(rows, cfg.containerId);
+}
+
 async function fetchAllBus() {
   const hour = new Date().getHours();
-  const now = new Date();
-  const nowEpoch = Math.floor(now.getTime() / 1000);
 
-  // Mark inactive stops before fetching
-  let anyActive = false;
   Object.entries(BUS_STOPS).forEach(([stopId, cfg]) => {
     const [start, end] = cfg.activeHours;
-    if (hour >= start && hour < end) {
-      anyActive = true;
-    } else {
-      const startLabel = start === 0 ? '12:00 am' : `${start}:00 ${start < 12 ? 'am' : 'pm'}`;
-      const endLabel   = end === 12 ? '12:00 pm' : end === 24 ? '12:00 am' : `${end}:00 pm`;
+    if (hour < start || hour >= end) {
+      const startLabel = start === 0  ? '12:00 am' : `${start}:00 am`;
+      const endLabel   = end   === 12 ? '12:00 pm' : '12:00 am';
       document.getElementById(cfg.containerId).innerHTML =
         `<div class="state-msg">Active ${startLabel} – ${endLabel}</div>`;
       document.getElementById(cfg.refreshId).textContent = 'Outside active hours';
     }
   });
 
-  if (!anyActive) return;
-
-  try {
-    const apiUrl = `https://rideon.app/json/GetGtfsRealtimeTripUpdates?apiKey=${RIDEON_KEY}&ClientId=${RIDEON_CLIENT_ID}`;
-    const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-
-    // Build arrival lists per stop
-    const arrivals = { '14845': [], '25804': [] };
-
-    const entities = data.entity || data.Entity || [];
-    entities.forEach(entity => {
-      const tu = entity.trip_update || entity.TripUpdate;
-      if (!tu) return;
-      const trip = tu.trip || tu.Trip || {};
-      const routeId = (trip.route_id || trip.RouteId || '').toString();
-      if (routeId !== '38') return;
-
-      const headsign = trip.trip_headsign || trip.TripHeadsign || 'Route 38';
-      const stopTimes = tu.stop_time_update || tu.StopTimeUpdate || [];
-
-      stopTimes.forEach(stu => {
-        const sid = (stu.stop_id || stu.StopId || '').toString();
-        if (!arrivals[sid]) return;
-
-        const arr = stu.arrival || stu.Arrival || stu.departure || stu.Departure || {};
-        const t = arr.time || arr.Time;
-        if (!t) return;
-
-        const mins = Math.round((parseInt(t) - nowEpoch) / 60);
-        if (mins < -1 || mins > 90) return;
-
-        arrivals[sid].push({ route: '38', dest: headsign, mins });
-      });
-    });
-
-    // Sort and render each active stop
-    Object.entries(BUS_STOPS).forEach(([stopId, cfg]) => {
-      const [start, end] = cfg.activeHours;
-      if (hour < start || hour >= end) return;
-      arrivals[stopId].sort((a, b) => a.mins - b.mins);
-      setRefreshTime(cfg.refreshId, now);
-      renderBusTable(arrivals[stopId], cfg.containerId);
-    });
-
-  } catch (e) {
-    Object.entries(BUS_STOPS).forEach(([stopId, cfg]) => {
-      const [start, end] = cfg.activeHours;
-      if (hour >= start && hour < end) {
+  for (const [stopId, cfg] of Object.entries(BUS_STOPS)) {
+    const [start, end] = cfg.activeHours;
+    if (hour >= start && hour < end) {
+      try {
+        await fetchBusStop(stopId, cfg);
+      } catch(e) {
         document.getElementById(cfg.containerId).innerHTML =
           `<div class="state-msg error-msg">Error: ${e.message}</div>`;
       }
-    });
+    }
   }
 }
 
