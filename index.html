@@ -768,24 +768,22 @@ async function fetchBusStop(stopId, cfg) {
   const gtfsStopId = GTFS_STOP_IDS[stopId] || stopId;
   const rows = [];
 
-  const entities = data.entity || data.Entity || [];
+  const entities = Array.isArray(data) ? data : (data.entity || data.Entity || []);
   entities.forEach(entity => {
-    const tu = entity.trip_update || entity.TripUpdate;
-    if (!tu) return;
-    const trip = tu.trip || tu.Trip || {};
-    const routeId = (trip.route_id || trip.RouteId || '').toString().trim();
+    const trip = entity.Trip || entity.trip_update?.trip || {};
+    const vehicle = entity.Vehicle || entity.vehicle || {};
+    const routeId = (trip.RouteId || trip.route_id || '').toString().trim();
     if (routeId !== '8973') return;
 
-    const vehicle = entity.vehicle || entity.Vehicle || {};
-    const headsign = vehicle.label || vehicle.Label || trip.trip_headsign || trip.TripHeadsign || 'Route 38';
-    const stopTimes = tu.stop_time_update || tu.StopTimeUpdate || [];
+    const headsign = vehicle.Label || vehicle.label || 'Route 38';
+    const stopTimes = entity.StopTimeUpdates || entity.stop_time_update || [];
 
     stopTimes.forEach(stu => {
-      const sid = (stu.stop_id || stu.StopId || '').toString().trim();
+      const sid = (stu.StopId || stu.stop_id || '').toString().trim();
       if (sid !== gtfsStopId) return;
 
-      const arr = stu.arrival || stu.Arrival || stu.departure || stu.Departure || {};
-      const t = parseInt(arr.time || arr.Time);
+      const arr = stu.Arrival || stu.arrival || stu.Departure || stu.departure || {};
+      const t = parseInt(arr.Time || arr.time);
       if (!t) return;
 
       const mins = Math.round((t - nowEpoch) / 60);
