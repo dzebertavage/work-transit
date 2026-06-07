@@ -748,6 +748,11 @@ async function fetchBusStop(stopId, cfg) {
   const json = await res.json();
   const html = json.contents;
 
+  // Debug: show raw response immediately
+  document.getElementById(cfg.containerId).innerHTML =
+    `<div class="state-msg" style="font-size:8px;text-align:left;padding:8px;word-break:break-all">status:${json.status?.http_code} len:${html?.length} | ${(html||'NULL').substring(0,400)}</div>`;
+  return;
+
   // Parse the HTML table response
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
