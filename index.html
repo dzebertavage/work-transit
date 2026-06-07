@@ -743,9 +743,10 @@ function renderBusTable(rows, containerId) {
 
 async function fetchBusStop(stopId, cfg) {
   const apiUrl = `https://rideon.app/busstop?take=15&ShowRefreshNote=true&MarginTop=25&stopId=${stopId}`;
-  const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`);
+  const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`);
   if (!res.ok) throw new Error('HTTP ' + res.status);
-  const html = await res.text();
+  const json = await res.json();
+  const html = json.contents;
 
   // Parse the HTML table response
   const parser = new DOMParser();
