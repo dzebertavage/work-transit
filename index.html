@@ -775,7 +775,9 @@ async function fetchBusStop(stopId, cfg) {
     const routeId = (trip.RouteId || trip.route_id || '').toString().trim();
     if (routeId !== '8973') return;
 
-    const headsign = vehicle.Label || vehicle.label || 'Route 38';
+    const headsign = trip.DirectionId === 1 || trip.direction_id === 1
+      ? 'North Bethesda Station'
+      : 'Wheaton';
     const stopTimes = entity.StopTimeUpdates || entity.stop_time_update || [];
 
     stopTimes.forEach(stu => {
