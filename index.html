@@ -764,7 +764,7 @@ async function fetchBusStop(stopId, cfg) {
     if (!tu) return;
     const trip = tu.trip || tu.Trip || {};
     const routeId = (trip.route_id || trip.RouteId || '').toString().trim();
-    if (routeId !== '38') return;
+    if (routeId !== '38' && routeId !== '38-1' && !routeId.startsWith('38')) return;
 
     const headsign = trip.trip_headsign || trip.TripHeadsign || 'Route 38';
     const stopTimes = tu.stop_time_update || tu.StopTimeUpdate || [];
