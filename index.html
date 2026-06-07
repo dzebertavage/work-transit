@@ -764,6 +764,12 @@ async function fetchBusStop(stopId, cfg) {
   });
 
   setRefreshTime(cfg.refreshId, new Date());
+
+  // Debug: show raw HTML
+  document.getElementById(cfg.containerId).innerHTML =
+    `<div class="state-msg" style="font-size:8px;text-align:left;padding:8px;word-break:break-all">${html.substring(0, 600)}</div>`;
+  return;
+
   renderBusTable(rows, cfg.containerId);
 }
 
