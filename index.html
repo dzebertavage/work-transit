@@ -743,27 +743,61 @@ function renderBusTable(rows, containerId) {
 
 const WORKER_URL = 'https://rideon-proxy.dzebertavage.workers.dev';
 
-async function fetchBusStop(stopId, cfg) {
-  const res = await fetch(`${WORKER_URL}/?stopId=${stopId}`);
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const html = await res.text();
+// RideOn truncates leading digit from stop IDs in GTFS feed
+const GTFS_STOP_IDS = {
+  '14845': '4845',
+  '25804': '5804',
+};
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+async function fetchBusStop(stopId, cfg) {
+  const res = await fetch(WORKER_URL);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+
+  const nowEpoch = Math.floor(Date.now() / 1000);
+  const gtfsStopId = GTFS_STOP_IDS[stopId] || stopId;
   const rows = [];
 
-  doc.querySelectorAll('tr').forEach(tr => {
-    const cells = tr.querySelectorAll('td');
-    if (cells.length < 5) return;
-    const route  = cells[1]?.textContent?.trim();
-    const dest   = cells[2]?.textContent?.trim();
-    const depart = cells[3]?.textContent?.trim();
-    const mins   = cells[4]?.textContent?.trim();
-    if (route && dest && route.match(/\d/)) rows.push({ route, dest, depart, mins });
+  const entities = data.entity || data.Entity || [];
+  entities.forEach(entity => {
+    const tu = entity.trip_update || entity.TripUpdate;
+    if (!tu) return;
+    const trip = tu.trip || tu.Trip || {};
+    const routeId = (trip.route_id || trip.RouteId || '').toString().trim();
+    if (routeId !== '38') return;
+
+    const headsign = trip.trip_headsign || trip.TripHeadsign || 'Route 38';
+    const stopTimes = tu.stop_time_update || tu.StopTimeUpdate || [];
+
+    stopTimes.forEach(stu => {
+      const sid = (stu.stop_id || stu.StopId || '').toString().trim();
+      if (sid !== gtfsStopId) return;
+
+      const arr = stu.arrival || stu.Arrival || stu.departure || stu.Departure || {};
+      const t = parseInt(arr.time || arr.Time);
+      if (!t) return;
+
+      const mins = Math.round((t - nowEpoch) / 60);
+      if (mins < -1 || mins > 90) return;
+      rows.push({ route: '38', dest: headsign, depart: '—', mins: mins <= 0 ? 'Now' : mins + ' min' });
+    });
+  });
+
+  // Debug: log entity count and route IDs found
+  const routeIds = [...new Set(entities.map(e => {
+    const tu = e.trip_update || e.TripUpdate;
+    const trip = tu?.trip || tu?.Trip || {};
+    return trip.route_id || trip.RouteId;
+  }).filter(Boolean))].slice(0, 20).join(', ');
+  console.log(`GTFS: ${entities.length} entities, routes: ${routeIds}, looking for stop ${gtfsStopId}, found ${rows.length} rows`);
+
+  rows.sort((a, b) => {
+    if (a.mins === 'Now') return -1;
+    if (b.mins === 'Now') return 1;
+    return parseInt(a.mins) - parseInt(b.mins);
   });
 
   setRefreshTime(cfg.refreshId, new Date());
-  console.log('RideOn HTML:', html.substring(0, 1000));
   renderBusTable(rows, cfg.containerId);
 }
 
