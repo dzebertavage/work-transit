@@ -743,7 +743,7 @@ function renderBusTable(rows, containerId) {
 
 const WORKER_URL = 'https://rideon-proxy.dzebertavage.workers.dev';
 
-// RideOn truncates leading digit from stop IDs in GTFS feed
+// RideOn GTFS stop IDs (drop leading digit from public stop numbers)
 const GTFS_STOP_IDS = {
   '14845': '4845',
   '25804': '5804',
@@ -764,9 +764,10 @@ async function fetchBusStop(stopId, cfg) {
     if (!tu) return;
     const trip = tu.trip || tu.Trip || {};
     const routeId = (trip.route_id || trip.RouteId || '').toString().trim();
-    if (routeId !== '38' && routeId !== '38-1' && !routeId.startsWith('38')) return;
+    if (routeId !== '8973') return;
 
-    const headsign = trip.trip_headsign || trip.TripHeadsign || 'Route 38';
+    const vehicle = entity.vehicle || entity.Vehicle || {};
+    const headsign = vehicle.label || vehicle.Label || trip.trip_headsign || trip.TripHeadsign || 'Route 38';
     const stopTimes = tu.stop_time_update || tu.StopTimeUpdate || [];
 
     stopTimes.forEach(stu => {
