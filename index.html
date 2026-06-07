@@ -763,6 +763,7 @@ async function fetchBusStop(stopId, cfg) {
   });
 
   setRefreshTime(cfg.refreshId, new Date());
+  console.log('RideOn HTML:', html.substring(0, 1000));
   renderBusTable(rows, cfg.containerId);
 }
 
