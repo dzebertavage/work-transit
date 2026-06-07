@@ -790,7 +790,8 @@ async function fetchBusStop(stopId, cfg) {
 
       const mins = Math.round((t - nowEpoch) / 60);
       if (mins < -1 || mins > 90) return;
-      rows.push({ route: '38', dest: headsign, depart: '—', mins: mins <= 0 ? 'Now' : mins + ' min' });
+      const departTime = new Date(t * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+      rows.push({ route: '38', dest: headsign, depart: departTime, mins: mins <= 0 ? 'Now' : mins + ' min' });
     });
   });
 
