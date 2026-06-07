@@ -751,6 +751,16 @@ const GTFS_STOP_IDS = {
 
 async function fetchBusStop(stopId, cfg) {
   const res = await fetch(WORKER_URL);
+  if (res.status === 429) {
+    Object.entries(BUS_STOPS).forEach(([stopId, cfg]) => {
+      const [start, end] = cfg.activeHours;
+      if (hour >= start && hour < end) {
+        document.getElementById(cfg.containerId).innerHTML =
+          '<div class="state-msg">Rate limited — will retry next refresh</div>';
+      }
+    });
+    return;
+  }
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const data = await res.json();
 
@@ -783,13 +793,6 @@ async function fetchBusStop(stopId, cfg) {
       rows.push({ route: '38', dest: headsign, depart: '—', mins: mins <= 0 ? 'Now' : mins + ' min' });
     });
   });
-
-  // Debug: log entity count and route IDs found
-  const routeIds = [...new Set(entities.map(e => {
-    const tu = e.trip_update || e.TripUpdate;
-    const trip = tu?.trip || tu?.Trip || {};
-    return trip.route_id || trip.RouteId;
-  }).filter(Boolean))].slice(0, 20).join(', ');
 
   rows.sort((a, b) => {
     if (a.mins === 'Now') return -1;
