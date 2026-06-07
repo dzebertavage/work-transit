@@ -742,15 +742,15 @@ function renderBusTable(rows, containerId) {
 }
 
 async function fetchBusStop(stopId, cfg) {
-  const apiUrl = `https://rideon.app/busstop?take=15&ShowRefreshNote=true&MarginTop=25&stopId=${stopId}`;
-  const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`);
+  const apiUrl = `https://rideon.app/json/GetGtfsRealtimeTripUpdates?apiKey=${RIDEON_KEY}&ClientId=${RIDEON_CLIENT_ID}`;
+  const res = await fetch(apiUrl);
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const json = await res.json();
-  const html = json.contents;
+  const html = JSON.stringify(json).substring(0, 400);
 
   // Debug: show raw response immediately
   document.getElementById(cfg.containerId).innerHTML =
-    `<div class="state-msg" style="font-size:8px;text-align:left;padding:8px;word-break:break-all">status:${json.status?.http_code} len:${html?.length} | ${(html||'NULL').substring(0,400)}</div>`;
+    `<div class="state-msg" style="font-size:8px;text-align:left;padding:8px;word-break:break-all">${html}</div>`;
   return;
 
   // Parse the HTML table response
